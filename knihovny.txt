@@ -1,0 +1,7 @@
+﻿DS18B20 - nepouzivam v programu:
+http://www.pjrc.com/teensy/td_libs_OneWire.html
+http://www.milesburton.com/?title=Dallas_Temperature_Control_Library#Latest
+
+Pouzite:
+https://github.com/adafruit/DHT-sensor-library
+https://github.com/adafruit/Adafruit-BMP085-Library.git
