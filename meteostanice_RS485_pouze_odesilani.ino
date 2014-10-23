@@ -14,6 +14,8 @@ Adafruit_BMP085 bmp; // BMP085 - tlak
 long interval = 10;  // interval mereni [s]
 uint32_t timer;
 
+unsigned long count;
+
 void setup () {
   Serial.begin(9600); 
 
@@ -36,6 +38,10 @@ void loop () {
 
 void merit() { 
 
+  Serial.print(F("Mereni c. "));
+  Serial.print(count);
+  Serial.println(F(""));
+  
   /* ####### DHT22 ####### */   
   dht.begin();   
   // Reading temperature or humidity takes about 250 milliseconds!
@@ -64,5 +70,7 @@ void merit() {
   /* ####### BMP085 ####### */
   
   Serial.println(F(""));
+
+  count++;
 }
 
