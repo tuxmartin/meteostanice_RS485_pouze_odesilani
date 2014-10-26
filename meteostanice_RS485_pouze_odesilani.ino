@@ -6,15 +6,13 @@
 #define DHTPIN 7
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 
-#define FW 100   // verze firmware
-
 DHT dht(DHTPIN, DHTTYPE); // DHT22 - vlhkost
 Adafruit_BMP085 bmp; // BMP085 - tlak
 
-long interval = 10;  // interval mereni [s]
+long interval = 60;  // interval mereni [s]
 uint32_t timer;
 
-unsigned long count;
+unsigned long count = 0;
 
 void setup () {
   Serial.begin(9600); 
@@ -37,10 +35,15 @@ void loop () {
 }
 
 void merit() { 
-
-  Serial.print(F("Mereni c. "));
+  
+  /* Data posilana do PC maji nasledujici format a zakoncena jsou <CR><LF>:
+   *   3;DHT22;23.40C;49.80%;BMP085;22.60C;99581Pa;
+   */
+  
+  //Serial.print(F("Mereni c. "));
   Serial.print(count);
-  Serial.println(F(""));
+  Serial.print(F(";"));
+
   
   /* ####### DHT22 ####### */   
   dht.begin();   
@@ -53,20 +56,22 @@ void merit() {
   if (isnan(t) || isnan(h)) {    
     Serial.println(F("DHT22_read_fail"));
   } else { 
-    Serial.print(F("DHT22 "));
+    Serial.print(F("DHT22;"));
     Serial.print(t);
-    Serial.print(F("C; "));
+    Serial.print(F("C;"));
     Serial.print(h);
-    Serial.println(F("%"));
+    Serial.print(F("%"));
   }
   /* ####### DHT22 ####### */
+  
+  Serial.print(F(";"));
     
   /* ####### BMP085 ####### */
-  Serial.print(F("BMP085 "));
+  Serial.print(F("BMP085;"));
   Serial.print(bmp.readTemperature());
-  Serial.print(F("C; "));
+  Serial.print(F("C;"));
   Serial.print(bmp.readPressure());
-  Serial.println(F("Pa"));
+  Serial.print(F("Pa;"));
   /* ####### BMP085 ####### */
   
   Serial.println(F(""));
