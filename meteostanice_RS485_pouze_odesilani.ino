@@ -9,6 +9,7 @@ DHT dht(DHTPIN, DHTTYPE); // DHT22 - vlhkost
 
 Adafruit_BMP085 bmp; // BMP085 - tlak
 
+#define SLAVE_ID 2
 
 #define  ledPin  13 // onboard led
 //////////////// registers of your slave ///////////////////
@@ -28,7 +29,7 @@ unsigned int holdingRegs[HOLDING_REGS_SIZE]; // function 3 and 16 register array
 
 void setup () {
   // SERIAL_8N2: 1 start bit, 8 data bits, 2 stop bits
-  modbus_configure(&Serial, 19200, SERIAL_8N2, 2, 2, HOLDING_REGS_SIZE, holdingRegs);
+  modbus_configure(&Serial, 19200, SERIAL_8N2, SLAVE_ID, 2, HOLDING_REGS_SIZE, holdingRegs);
   
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);

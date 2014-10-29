@@ -112,7 +112,7 @@ else:
 	LED_STATE=1
 
 #registeraddress (int), value (int or float), numberOfDecimals (int), functioncode (int)
-sleep(1) # 1s
+#sleep(1) # 1s
 dev1.write_register(5, LED_STATE, 0, MODBUS_16)
 
 
