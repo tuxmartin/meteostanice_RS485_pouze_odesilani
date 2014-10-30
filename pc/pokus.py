@@ -77,7 +77,7 @@ dev1.write_registers(5, ledStatus)
 # Posleme prikaz k namereni dat (Arduino si je nameri a ulozi do RAM):
 zmerData = 1
 dev1.write_register(6, zmerData, 0, MODBUS_16)
-sleep(1) # 500ms  - mereni trva asi 250ms
+sleep(1) # 500ms  - mereni DHT22 trva asi 250ms
 
 # Precteme namerena data:
 data = dev1.read_registers(0, 6, MODBUS_3)
@@ -106,13 +106,11 @@ print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C ", BMP085_PRES_VAL, "hPa (absolutni
 # https://docs.python.org/3.3/faq/programming.html#is-there-an-equivalent-of-c-s-ternary-operator   [on_true] if [expression] else [on_false]
 print "Stav LED - ", LED_STATE, " - ", ("svitila - VYPINAM" if LED_STATE else "nesvitila - ZAPINAM")
 
-if LED_STATE == 1:
+if LED_STATE:
 	LED_STATE=0
 else:
 	LED_STATE=1
 
-#registeraddress (int), value (int or float), numberOfDecimals (int), functioncode (int)
-#sleep(1) # 1s
 dev1.write_register(5, LED_STATE, 0, MODBUS_16)
 
 

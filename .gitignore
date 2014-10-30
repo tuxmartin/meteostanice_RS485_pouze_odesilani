@@ -27,4 +27,7 @@
 *.out
 *.app
 
+# Python
+*.pyc
+
 *Thumbs.db*
