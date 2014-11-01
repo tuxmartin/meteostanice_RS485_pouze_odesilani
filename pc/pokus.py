@@ -17,6 +17,8 @@ import minimalmodbus
 import time
 from time import sleep
 import serial
+from math import log # pro rosny bod
+from math import e # pro rosny bod
 
 MODBUS_3  = 3  # Read holding registers
 MODBUS_16 = 16 # Write multiple registers
@@ -27,6 +29,18 @@ def relativniTlak(absolutniTlak, teplota, nadmorskaVyska):
 	g = 9.80665
 	return ((absolutniTlak * g * nadmorskaVyska) / (287 * (273 + teplota) + (nadmorskaVyska / 400))) + absolutniTlak
 
+
+def rosnyBod(teplota, vlhkost):
+	if (teplota > 0): # https://github.com/MultiTricker/TMEP/blob/a14a69ee1a17eb087808e8fa0456069828cfa509/app/scripts/fce.php#L282
+		return round(243.12*((log(vlhkost/100)+((17.62*teplota)/(243.12+teplota)))/(17.62-log(vlhkost/100)-((17.62*teplota)/(243.12+teplota)))), 1)
+	else:
+		return round(272.62*((log(vlhkost/100)+((22.46*teplota)/(272.62+teplota)))/(22.46-log(vlhkost/100)-((22.46*teplota)/(272.62+teplota)))), 1)
+
+	""" - nefunguje
+	# http://www.klusik.cz/cs/article/2-mraky-nad-nami-jak-na-vypocet-rosneho-bodu
+	Tdp = (243.5 * log10 ( (vlhkost/100) * e **((17.67*teplota)/(243.5*teplota)) )) / ( 17.67 - log10 ( (vlhkost/100) * e**( (17.67*teplota)/(243.5+teplota) ) )  )
+	print Tdp
+	"""
 
 print "---------------------------------------"
 print "Aktualni cas: ",  time.strftime("%Y-%m-%d %H:%M:%S")
@@ -100,8 +114,8 @@ LED_STATE       = data[5]
 
 relTlak = relativniTlak(BMP085_PRES_VAL, BMP085_TEMP_VAL, 287) # Jicin ma podle Googlu 287mnm
 
-print "DHT22: ", DHT22_TEMP_VAL,  STUPEN, "C ",  DHT22_HUM_VAL, "%"
-print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C ", BMP085_PRES_VAL, "hPa (absolutni) ",  "{:4.2f}".format(relTlak) , "hPa (relativni)"
+print "DHT22: ", DHT22_TEMP_VAL,  STUPEN, "C, ",  DHT22_HUM_VAL, "%, rosny bod ", rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL),  STUPEN, "C " 
+print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C, ", BMP085_PRES_VAL, "hPa (absolutni), ",  "{:4.2f}".format(relTlak) , "hPa (relativni)"
 
 # https://docs.python.org/3.3/faq/programming.html#is-there-an-equivalent-of-c-s-ternary-operator   [on_true] if [expression] else [on_false]
 print "Stav LED - ", LED_STATE, " - ", ("svitila - VYPINAM" if LED_STATE else "nesvitila - ZAPINAM")
