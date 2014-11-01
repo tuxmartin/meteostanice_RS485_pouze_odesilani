@@ -14,8 +14,8 @@
 # python -m py_compile fileA.py fileB.py fileC.py
 
 import minimalmodbus
-import time
-from time import sleep
+from time import sleep # cekani pred ctenim z meteostanice (aby DHT22 melo cas provest mereni)
+from time import strftime # vypis aktualniho data a casu
 import serial
 from math import log # pro rosny bod
 from math import e # pro rosny bod
@@ -43,7 +43,7 @@ def rosnyBod(teplota, vlhkost):
 	"""
 
 print "---------------------------------------"
-print "Aktualni cas: ",  time.strftime("%Y-%m-%d %H:%M:%S")
+print "Aktualni cas: ",  strftime("%Y-%m-%d %H:%M:%S")
 
 """
 DEFAULT VALUES:
@@ -114,8 +114,10 @@ LED_STATE       = data[5]
 
 relTlak = relativniTlak(BMP085_PRES_VAL, BMP085_TEMP_VAL, 287) # Jicin ma podle Googlu 287mnm
 
-print "DHT22: ", DHT22_TEMP_VAL,  STUPEN, "C, ",  DHT22_HUM_VAL, "%, rosny bod ", rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL),  STUPEN, "C " 
+print ""
+print "DHT22: ", DHT22_TEMP_VAL,  STUPEN, "C, ",  DHT22_HUM_VAL, "%, rosny bod ", rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL),  STUPEN, "C" 
 print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C, ", BMP085_PRES_VAL, "hPa (absolutni), ",  "{:4.2f}".format(relTlak) , "hPa (relativni)"
+print ""
 
 # https://docs.python.org/3.3/faq/programming.html#is-there-an-equivalent-of-c-s-ternary-operator   [on_true] if [expression] else [on_false]
 print "Stav LED - ", LED_STATE, " - ", ("svitila - VYPINAM" if LED_STATE else "nesvitila - ZAPINAM")
