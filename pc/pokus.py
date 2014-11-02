@@ -20,6 +20,11 @@ import serial
 from math import log # pro rosny bod
 from math import e # pro rosny bod
 
+import urllib # posilani na server (REST client)
+import urllib2 # posilani na server (REST client)
+
+url = 'http://localhost/meteo/'
+
 MODBUS_3  = 3  # Read holding registers
 MODBUS_16 = 16 # Write multiple registers
 STUPEN    = u'\u00b0' # znak pro stupen
@@ -113,11 +118,23 @@ BMP085_PRES_VAL = data[4]
 LED_STATE       = data[5]
 
 relTlak = relativniTlak(BMP085_PRES_VAL, BMP085_TEMP_VAL, 287) # Jicin ma podle Googlu 287mnm
+rBod = rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL)
 
 print ""
-print "DHT22: ", DHT22_TEMP_VAL,  STUPEN, "C, ",  DHT22_HUM_VAL, "%, rosny bod ", rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL),  STUPEN, "C" 
+print "DHT22: ", DHT22_TEMP_VAL,  STUPEN, "C, ",  DHT22_HUM_VAL, "%, rosny bod ", rBod,  STUPEN, "C" 
 print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C, ", BMP085_PRES_VAL, "hPa (absolutni), ",  "{:4.2f}".format(relTlak) , "hPa (relativni)"
 print ""
+
+params = urllib.urlencode({ # napleneni dat k odeslani
+  'DHT22_TEMP_VAL'	: DHT22_TEMP_VAL,
+  'DHT22_HUM_VAL'	: DHT22_HUM_VAL,
+  'DHT22_ROSNY_BOD'	: rBod,
+  'BMP085_TEMP_VAL'	: BMP085_TEMP_VAL,
+  'BMP085_PRES_VAL'	: BMP085_PRES_VAL,
+  'BMP085_REL_TLAK'	: relTlak
+})
+# DHT22_ROSNY_BOD=12.2&BMP085_PRES_VAL=986&DHT22_HUM_VAL=54.0&BMP085_REL_TLAK=1018.81084798&BMP085_TEMP_VAL=21.7&DHT22_TEMP_VAL=21.9
+response = urllib2.urlopen(url, params).read() # poslani na server a precteni odpvoedi
 
 # https://docs.python.org/3.3/faq/programming.html#is-there-an-equivalent-of-c-s-ternary-operator   [on_true] if [expression] else [on_false]
 print "Stav LED - ", LED_STATE, " - ", ("svitila - VYPINAM" if LED_STATE else "nesvitila - ZAPINAM")
