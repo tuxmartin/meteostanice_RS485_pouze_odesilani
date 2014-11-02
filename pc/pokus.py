@@ -134,7 +134,10 @@ params = urllib.urlencode({ # napleneni dat k odeslani
   'BMP085_REL_TLAK'	: relTlak
 })
 # DHT22_ROSNY_BOD=12.2&BMP085_PRES_VAL=986&DHT22_HUM_VAL=54.0&BMP085_REL_TLAK=1018.81084798&BMP085_TEMP_VAL=21.7&DHT22_TEMP_VAL=21.9
-response = urllib2.urlopen(url, params).read() # poslani na server a precteni odpvoedi
+try:
+    response = urllib2.urlopen(url, params, timeout = 5).read() # poslani na server a precteni odpvoedi
+except urllib2.URLError, e:
+    print "Oops, timed out?"
 
 # https://docs.python.org/3.3/faq/programming.html#is-there-an-equivalent-of-c-s-ternary-operator   [on_true] if [expression] else [on_false]
 print "Stav LED - ", LED_STATE, " - ", ("svitila - VYPINAM" if LED_STATE else "nesvitila - ZAPINAM")
