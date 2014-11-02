@@ -32,7 +32,7 @@ STUPEN    = u'\u00b0' # znak pro stupen
 def relativniTlak(absolutniTlak, teplota, nadmorskaVyska):
 	# http://forum.amaterskameteorologie.cz/viewtopic.php?f=9&t=65#p1968
 	g = 9.80665
-	return ((absolutniTlak * g * nadmorskaVyska) / (287 * (273 + teplota) + (nadmorskaVyska / 400))) + absolutniTlak
+	return round( (((absolutniTlak * g * nadmorskaVyska) / (287 * (273 + teplota) + (nadmorskaVyska / 400))) + absolutniTlak), 1 )
 
 
 def rosnyBod(teplota, vlhkost):
@@ -122,7 +122,7 @@ rBod = rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL)
 
 print ""
 print "DHT22: ", DHT22_TEMP_VAL,  STUPEN, "C, ",  DHT22_HUM_VAL, "%, rosny bod ", rBod,  STUPEN, "C" 
-print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C, ", BMP085_PRES_VAL, "hPa (absolutni), ",  "{:4.2f}".format(relTlak) , "hPa (relativni)"
+print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C, ", BMP085_PRES_VAL, "hPa (absolutni), ",  relTlak , "hPa (relativni)"
 print ""
 
 params = urllib.urlencode({ # napleneni dat k odeslani
