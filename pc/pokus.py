@@ -95,27 +95,31 @@ dev1.write_registers(5, ledStatus)
 
 # Posleme prikaz k namereni dat (Arduino si je nameri a ulozi do RAM):
 zmerData = 1
-dev1.write_register(6, zmerData, 0, MODBUS_16)
+dev1.write_register(1, zmerData, 0, MODBUS_16) # MEASURE - 1
 sleep(1) # 500ms  - mereni DHT22 trva asi 250ms
 
 # Precteme namerena data:
-data = dev1.read_registers(0, 6, MODBUS_3)
+data = dev1.read_registers(0, 9, MODBUS_3)
 print "RAW data: ", data
 """
-  DHT22_TEMP_VAL,  
-  DHT22_HUM_VAL,   
-  DHT22_ERROR,
-  BMP085_TEMP_VAL,        
-  BMP085_PRES_VAL,
-  LED_STATE,
-  MEASURE,
+  DEVICE_VER,  	0
+  MEASURE,	1
+  BMP085_ERROR,	2
+  DHT22_ERROR,	3
+  DHT22_TEMP,  	4
+  DHT22_HUM,   	5
+  BMP085_TEMP,	6   	     
+  BMP085_PRES,	7
+  LED_STATE,	8
 """
-DHT22_TEMP_VAL  = data[0] / 10.0
-DHT22_HUM_VAL   = data[1] / 10.0
-DHT22_ERROR     = data[2]
-BMP085_TEMP_VAL = data[3] / 10.0
-BMP085_PRES_VAL = data[4]
-LED_STATE       = data[5]
+DEVICE_VER	= data[0]
+BMP085_ERROR	= data[2]
+DHT22_ERROR	= data[3]
+DHT22_TEMP_VAL  = data[4] / 10.0
+DHT22_HUM_VAL   = data[5] / 10.0
+BMP085_TEMP_VAL = data[6] / 10.0
+BMP085_PRES_VAL = data[7]
+LED_STATE       = data[8]
 
 relTlak = relativniTlak(BMP085_PRES_VAL, BMP085_TEMP_VAL, 287) # Jicin ma podle Googlu 287mnm
 rBod = rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL)
@@ -126,6 +130,9 @@ print "BMP085 ", BMP085_TEMP_VAL, STUPEN, "C, ", BMP085_PRES_VAL, "hPa (absolutn
 print ""
 
 params = urllib.urlencode({ # napleneni dat k odeslani
+  'DEVICE_VER'		: DEVICE_VER,
+  'BMP085_ERROR'	: BMP085_ERROR,
+  'DHT22_ERROR'		: DHT22_ERROR,
   'DHT22_TEMP_VAL'	: DHT22_TEMP_VAL,
   'DHT22_HUM_VAL'	: DHT22_HUM_VAL,
   'DHT22_ROSNY_BOD'	: rBod,
@@ -135,9 +142,9 @@ params = urllib.urlencode({ # napleneni dat k odeslani
 })
 # DHT22_ROSNY_BOD=12.2&BMP085_PRES_VAL=986&DHT22_HUM_VAL=54.0&BMP085_REL_TLAK=1018.81084798&BMP085_TEMP_VAL=21.7&DHT22_TEMP_VAL=21.9
 try:
-    response = urllib2.urlopen(url, params, timeout = 5).read() # poslani na server a precteni odpvoedi
+    response = urllib2.urlopen(url, params, timeout = 5).read() # poslani na server a precteni odpovedi
 except urllib2.URLError, e:
-    print "Oops, timed out?"
+    print "Nepovedlo se poslat data na server!"
 
 # https://docs.python.org/3.3/faq/programming.html#is-there-an-equivalent-of-c-s-ternary-operator   [on_true] if [expression] else [on_false]
 print "Stav LED - ", LED_STATE, " - ", ("svitila - VYPINAM" if LED_STATE else "nesvitila - ZAPINAM")
@@ -147,7 +154,7 @@ if LED_STATE:
 else:
 	LED_STATE=1
 
-dev1.write_register(5, LED_STATE, 0, MODBUS_16)
+dev1.write_register(8, LED_STATE, 0, MODBUS_16)
 
 
 

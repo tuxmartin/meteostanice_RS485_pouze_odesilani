@@ -11,23 +11,31 @@ Adafruit_BMP085 bmp; // BMP085 - tlak
 
 #define SLAVE_ID 2
 
+#define DEVICE_VER_CONST    100
+
 #define  ledPin  13 // onboard led
+
+boolean BMP085ok = false;
+
 //////////////// registers of your slave ///////////////////
 enum 
-{     
-  DHT22_TEMP_VAL,  
-  DHT22_HUM_VAL,   
-  DHT22_ERROR,
-  BMP085_TEMP_VAL,        
-  BMP085_PRES_VAL,
-  LED_STATE,
+{  
+  DEVICE_VER,  
   MEASURE,
+  BMP085_ERROR,
+  DHT22_ERROR,
+  DHT22_TEMP,  
+  DHT22_HUM,   
+  BMP085_TEMP,        
+  BMP085_PRES,
+  LED_STATE,
   HOLDING_REGS_SIZE // leave this one
 };
 unsigned int holdingRegs[HOLDING_REGS_SIZE]; // function 3 and 16 register array
 //////////////// registers of your slave ///////////////////
 
 void setup () {
+  holdingRegs[DEVICE_VER] = DEVICE_VER_CONST;
   // SERIAL_8N2: 1 start bit, 8 data bits, 2 stop bits
   modbus_configure(&Serial, 19200, SERIAL_8N2, SLAVE_ID, 2, HOLDING_REGS_SIZE, holdingRegs);
   
@@ -35,9 +43,17 @@ void setup () {
   digitalWrite(ledPin, LOW);
 
   /* ####### BMP085 ####### */
-  if (!bmp.begin()) {
-	//Serial.println("Could not find a valid BMP085 sensor, check wiring!");
-	while (1) {}
+  for (byte i=1; i<=5; i++) { // 5x zkusime inicializovat cidlo (celkem se 5s) //FIXME: asi zbytecne cekat, pokud neodpovi porve, jit asi dal - zkusit!
+    if (!bmp.begin()) {
+        holdingRegs[BMP085_ERROR] = 1;
+        BMP085ok = false;
+  	//Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+  	delay(1000); // [ms]
+    } else {
+      holdingRegs[BMP085_ERROR] = 0;
+      BMP085ok = true;
+      break;
+    }
   }
   /* ####### BMP085 ####### */
   
@@ -73,21 +89,25 @@ void merit() {
     
   // check if returns are valid, if they are NaN (not a number) then something went wrong!
   if (isnan(t) || isnan(h)) {    
-    holdingRegs[DHT22_ERROR] = 1; // DHT22_read_fail
+    holdingRegs[DHT22_ERROR] = 1; // 1 = DHT22_read_fail
   } else { 
     holdingRegs[DHT22_ERROR] = 0;
-    holdingRegs[DHT22_TEMP_VAL] = t*10;
-    holdingRegs[DHT22_HUM_VAL] = h*10;
+    holdingRegs[DHT22_TEMP] = t*10;
+    holdingRegs[DHT22_HUM] = h*10;
   }
   /* ####### DHT22 ####### */
 
   /* ####### BMP085 ####### */
-  holdingRegs[BMP085_TEMP_VAL] = int( bmp.readTemperature() * 10 );
-  holdingRegs[BMP085_PRES_VAL] = ( bmp.readPressure() / 100);
+  if (BMP085ok) { // pokud bylo cidlo inicializovano
+    holdingRegs[BMP085_ERROR] == 0;
+    holdingRegs[BMP085_TEMP] = int( bmp.readTemperature() * 10 );
+    holdingRegs[BMP085_PRES] = ( bmp.readPressure() / 100);
+  }
   /* ####### BMP085 ####### */  
 }
 
 void serialFlushBuffer() {
-  while (Serial.read() >= 0)
-   ; // do nothing
+  while (Serial.read() >= 0) {
+    // do nothing
+  }
 }
