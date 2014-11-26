@@ -31,3 +31,10 @@
 *.pyc
 
 *Thumbs.db*
+
+# Compiled binaries
+pc/test
+
+
+*.swp
+
