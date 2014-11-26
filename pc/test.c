@@ -18,7 +18,7 @@
 int main(void) {
 
 	modbus_t *ctx = NULL;
-  modbus_mapping_t *mb_mapping = NULL;
+	modbus_mapping_t *mb_mapping = NULL;
 	uint16_t tab_reg[64]; // pouziva se jen 9
 	uint16_t* zapis[1];
 	uint16_t* test[1];
