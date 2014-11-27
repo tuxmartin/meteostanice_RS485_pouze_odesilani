@@ -127,6 +127,12 @@ Stav LED -  1  -  svitila - VYPINAM
 ---------------------------------------
 */
 
+
+/* Poslani dat na webserver pomoci libcurl:
+	http://stackoverflow.com/q/7850716/1974494
+	http://stackoverflow.com/a/10651038/1974494
+*/
+
 	modbus_flush(ctx);
 	modbus_close(ctx);
 	modbus_free(ctx);
