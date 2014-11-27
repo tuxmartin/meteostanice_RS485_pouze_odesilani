@@ -102,10 +102,10 @@ int main(void) {
 	rBod = rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL)
 */
 
-	float rosBod = rosnyBod(data[4]/10, data[5]/10); // float rosnyBod(float teplota, float vlhkost)
-	float relTlak = relativniTlak(data[7], data[6]/10, NADMORSKA_VYSKA); // float relativniTlak(float absolutniTlak, float teplota, float nadmorskaVyska)
-	printf("DHT22:   %f °C, %f %, rosny bod     %f °C\n", data[4]/10, data[5]/10, rosBod);
-	printf("BMP085:  %f °C, %f hPa (absolutni), %f hPa (relativni)\n", data[6]/10, data[7]/10, relTlak);
+	float rosBod = rosnyBod( (float) data[4]/10, (float)data[5]/10); // float rosnyBod(float teplota, float vlhkost)
+	float relTlak = relativniTlak( (float)data[7], (float)data[6]/10, NADMORSKA_VYSKA); // float relativniTlak(float absolutniTlak, float teplota, float nadmorskaVyska)
+	printf("DHT22:   %f °C, %f %, rosny bod  %f °C\n", (float)data[4]/10, (float)data[5]/10, rosBod);
+	printf("BMP085:  %f °C, %f hPa (absolutni), %f hPa (relativni)\n", (float)data[6]/10, (float)data[7], relTlak);
 	printf("rosnyBod = %f\n", rosBod);
 	printf("relativniTlak = %f\n", relTlak);
 	if (data[8]) {
