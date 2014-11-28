@@ -3,6 +3,10 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <string.h>
+
+#include <curl/curl.h>
+
 #include <math.h> 
 // don't forget #include <math.h> and link with -lm.
 
@@ -25,6 +29,8 @@ void sleepms(int n);
 float relativniTlak(float absolutniTlak, float teplota, float nadmorskaVyska);
 
 float rosnyBod(float teplota, float vlhkost);
+
+int poslatNaServer(char *POSTstring, char *serverURL, int timeoutS, int verboseOutput);
 
 int main(void) {
 	modbus_t *ctx = NULL;
@@ -102,12 +108,18 @@ int main(void) {
 	rBod = rosnyBod(DHT22_TEMP_VAL, DHT22_HUM_VAL)
 */
 
-	float rosBod = rosnyBod( (float) data[4]/10, (float)data[5]/10); // float rosnyBod(float teplota, float vlhkost)
-	float relTlak = relativniTlak( (float)data[7], (float)data[6]/10, NADMORSKA_VYSKA); // float relativniTlak(float absolutniTlak, float teplota, float nadmorskaVyska)
-	printf("DHT22:   %f °C, %f %, rosny bod  %f °C\n", (float)data[4]/10, (float)data[5]/10, rosBod);
-	printf("BMP085:  %f °C, %f hPa (absolutni), %f hPa (relativni)\n", (float)data[6]/10, (float)data[7], relTlak);
-	printf("rosnyBod = %f\n", rosBod);
-	printf("relativniTlak = %f\n", relTlak);
+int DEVICE_VER				= data[0];
+int DHT22_ERROR				= data[3];
+int BMP085_ERROR			= data[2];
+float DHT22_TEMP_VAL	= data[4] / 10.0;
+float DHT22_HUM_VAL		= data[5] / 10.0;
+float DHT22_ROSNY_BOD	= rosnyBod( DHT22_TEMP_VAL, DHT22_HUM_VAL); // float rosnyBod(float teplota, float vlhkost)
+float BMP085_TEMP_VAL	= data[6] / 10.0;
+float BMP085_PRES_VAL	= data[7]; // Pa - pro hPa *10 !!!
+float BMP085_REL_TLAK	= relativniTlak( BMP085_PRES_VAL, BMP085_TEMP_VAL, NADMORSKA_VYSKA); // float relativniTlak(float absolutniTlak, float teplota, float nadmorskaVyska)
+
+	printf("DHT22:   %.2f °C, %.2f %, rosny bod  %.2f °C\n", DHT22_TEMP_VAL, DHT22_HUM_VAL, DHT22_ROSNY_BOD);
+	printf("BMP085:  %.2f °C, %.2f hPa (absolutni), %.2f hPa (relativni)\n", BMP085_TEMP_VAL, BMP085_PRES_VAL, BMP085_REL_TLAK);
 	if (data[8]) {
 		printf("Stav LED -  1  -  svitila - VYPINAM\n");
 	} else {
@@ -126,12 +138,16 @@ Nepovedlo se poslat data na server!
 Stav LED -  1  -  svitila - VYPINAM
 ---------------------------------------
 */
+	//char dataToSend[]="VGhpcyBpcyBqdXN0IGEgbWVzc2FnZSwgaXQncyBub3QgdGhlIHJlYWwgdGhpbmc=";
+	char dataToSend[255];
+	char server[]= "http://localhost:8765/skript.php";
 
+	// BMP085_ERROR=0&DEVICE_VER=100&DHT22_ROSNY_BOD=8.5&BMP085_PRES_VAL=983&BMP085_TEMP_VAL=20.6&DHT22_HUM_VAL=45.1&DHT22_ERROR=0&BMP085_REL_TLAK=1015.8&DHT22_TEMP_VAL=20.9
+	sprintf(dataToSend, "DEVICE_VER=%d&DHT22_ERROR=%d&BMP085_ERROR=%d&DHT22_TEMP_VAL=%.2f&DHT22_HUM_VAL=%.2f&DHT22_ROSNY_BOD=%.2f&BMP085_TEMP_VAL=%.2f&BMP085_PRES_VAL=%.2f&BMP085_REL_TLAK=%.2f\n\0", \
+		DEVICE_VER, DHT22_ERROR, BMP085_ERROR, DHT22_TEMP_VAL, DHT22_HUM_VAL, DHT22_ROSNY_BOD, BMP085_TEMP_VAL, BMP085_PRES_VAL, BMP085_REL_TLAK);
 
-/* Poslani dat na webserver pomoci libcurl:
-	http://stackoverflow.com/q/7850716/1974494
-	http://stackoverflow.com/a/10651038/1974494
-*/
+	printf("Data na server: %s", dataToSend);
+	int status = poslatNaServer(dataToSend, server, 3, 0);
 
 	modbus_flush(ctx);
 	modbus_close(ctx);
@@ -164,8 +180,34 @@ float rosnyBod(float teplota, float vlhkost) {
 	return cislo;
 }
 
+int poslatNaServer(char *POSTstring, char *serverURL, int timeoutS, int verboseOutput) {
+	/* Poslani dat na webserver pomoci libcurl:
+		http://stackoverflow.com/q/7850716/1974494
+		http://stackoverflow.com/a/10651038/1974494
+	*/
+	CURL *curl;
+	CURLcode res;
+
+	curl_global_init(CURL_GLOBAL_ALL);
+	curl = curl_easy_init();
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, verboseOutput); // 0 / 1
+	//curl_easy_setopt(curl, CURLOPT_URL, "http://www.example.com/hello-world");
+	curl_easy_setopt(curl, CURLOPT_URL, serverURL);
+	curl_easy_setopt(curl, CURLOPT_POST, 1);
+	//curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.5");
+	//curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "foo=bar&foz=baz");
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, POSTstring);
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(POSTstring));
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeoutS);
+	curl_easy_perform(curl);
+
+	curl_easy_cleanup(curl);
+
+	return 0;
+}
+
 
 // # apt-get install libmodbus-dev libmodbus5
-// $ gcc -std=c99 -O2 -Wall -I /usr/include/modbus test.c -o test -L/usr/lib/modbus -lmodbus -lm
-
+// $ gcc -std=c99 -O2 -Wall -I /usr/include/modbus test.c -o test -L/usr/lib/modbus -L/usr/include/curl -lmodbus -lm -lcurl
+// $ nc -l localhost 8765
 
