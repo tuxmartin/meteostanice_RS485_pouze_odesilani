@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <string.h>
 
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]) {
 	int rc = 0;
 
 	//ctx = modbus_new_rtu("/dev/ttyUSB0", 19200, 'N', 8, 2);
-	ctx = modbus_new_rtu(argv[1], argv[2], argv[3], argv[4], argv[5]);
+	ctx = modbus_new_rtu(argv[1], atoi(argv[2]), argv[3][0], atoi(argv[4]), atoi(argv[5]));
 	if (ctx == NULL) {
 		fprintf(stderr, "Unable to create the libmodbus context\n");
 		return -1;
