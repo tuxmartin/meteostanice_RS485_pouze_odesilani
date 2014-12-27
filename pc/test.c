@@ -32,7 +32,14 @@ float rosnyBod(float teplota, float vlhkost);
 
 int poslatNaServer(char *POSTstring, char *serverURL, int timeoutS, int verboseOutput);
 
-int main(void) {
+int main(int argc, char *argv[]) {
+	if (argc != 6) {
+		printf("Nebyly predany parametry pro seriovy port!\n");
+		printf("Syntaxe:\n\n");
+		printf("./jmenoProgramu /dev/ttyUSB0 19200 N 8 2\n");
+		return -1;
+	}
+
 	modbus_t *ctx = NULL;
 	modbus_mapping_t *mb_mapping = NULL;
 
@@ -40,7 +47,8 @@ int main(void) {
 	uint16_t* poslat[1];
 	int rc = 0;
 
-	ctx = modbus_new_rtu("/dev/ttyUSB0", 19200, 'N', 8, 2);
+	//ctx = modbus_new_rtu("/dev/ttyUSB0", 19200, 'N', 8, 2);
+	ctx = modbus_new_rtu(argv[1], argv[2], argv[3], argv[4], argv[5]);
 	if (ctx == NULL) {
 		fprintf(stderr, "Unable to create the libmodbus context\n");
 		return -1;
