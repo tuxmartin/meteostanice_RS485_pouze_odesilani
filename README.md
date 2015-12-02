@@ -10,3 +10,7 @@ Meteostanice z Arduina (teplota, vlhkost a tlak vzduchu). Pouze odesila po RS-48
 ![Ukazka](https://raw.githubusercontent.com/tuxmartin/meteostanice_RS485_pouze_odesilani/master/ukazka/DSCF8049.JPG)
 ![Ukazka](https://raw.githubusercontent.com/tuxmartin/meteostanice_RS485_pouze_odesilani/master/ukazka/DSCF8050.JPG)
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/tuxmartin/meteostanice_rs485_pouze_odesilani/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
